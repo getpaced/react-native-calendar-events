@@ -124,8 +124,14 @@ RCT_EXPORT_MODULE()
         NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
         if(exceptionDate) {
+            NSCalendar *cal = [NSCalendar currentCalendar];
+            NSDate *endPredicateDate = [cal dateByAddingUnit:NSCalendarUnitDay
+                                     value:1
+                                    toDate:exceptionDate
+                                   options:0];
+
             NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
-                                                                              endDate:endDate
+                                                                              endDate:endPredicateDate
                                                                             calendars:nil];
             NSArray *calendarEvents = [self.eventStore eventsMatchingPredicate:predicate];
 
