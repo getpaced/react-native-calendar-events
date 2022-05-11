@@ -603,9 +603,26 @@ RCT_EXPORT_MODULE()
         [attendeesStatuses setObject: @"Tentative" forKey: @"4"];
         [attendeesStatuses setObject: @"Unknown" forKey: @"0"];
         
+        NSString *organizerEmail = @"";
+        if (event.organizer) {
+            EKParticipant *organizer = event.organizer;
+            NSMutableDictionary *organizerData = [NSMutableDictionary dictionary];
+            for (NSString *pairString in [organizer.description componentsSeparatedByString:@";"])
+            {
+                NSArray *pair = [pairString componentsSeparatedByString:@"="];
+                if ( [pair count] != 2)
+                    continue;
+                [organizerData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+            }
+            organizerEmail = [organizerData valueForKey:@"email"];
+        }
+        
         if (event.attendees) {
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
             for (EKParticipant *attendee in event.attendees) {
+                
+                NSLog(@"%@", attendee.description);
+                
                 NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
                 for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
                 {
@@ -621,9 +638,12 @@ RCT_EXPORT_MODULE()
                 NSString *phone = [descriptionData valueForKey:@"phone"];
                 NSString *role = [descriptionData valueForKey:@"role"];
                 NSString *status = [descriptionData valueForKey:@"status"];
+
                 bool isMe = attendee.currentUser;
+                bool isOrganizer = email && ![email isEqualToString:@"(null)"] && [email isEqualToString:organizerEmail];
                 
                 [formattedAttendee setValue:[NSNumber numberWithBool:isMe] forKey:@"isMe"];
+                [formattedAttendee setValue:[NSNumber numberWithBool:isOrganizer] forKey:@"isOrganizer"];
 
                 if(email && ![email isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:email forKey:@"email"];
