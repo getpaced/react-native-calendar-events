@@ -602,6 +602,8 @@ RCT_EXPORT_MODULE()
                 NSString *name = [descriptionData valueForKey:@"name"];
                 NSString *email = [descriptionData valueForKey:@"email"];
                 NSString *phone = [descriptionData valueForKey:@"phone"];
+                NSString *role = [descriptionData valueForKey:@"participantRole"];
+                NSString *status = [descriptionData valueForKey:@"participantStatus"];
 
                 if(email && ![email isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:email forKey:@"email"];
@@ -620,6 +622,18 @@ RCT_EXPORT_MODULE()
                 }
                 else {
                     [formattedAttendee setValue:@"" forKey:@"name"];
+                }
+                if(role && ![role isEqualToString:@"(null)"]) {
+                    [formattedAttendee setValue:role forKey:@"role"];
+                }
+                else {
+                    [formattedAttendee setValue:@"unknown" forKey:@"role"];
+                }
+                if(status && ![status isEqualToString:@"(null)"]) {
+                    [formattedAttendee setValue:status forKey:@"status"];
+                }
+                else {
+                    [formattedAttendee setValue:@"unknown" forKey:@"status"];
                 }
                 [attendees addObject:formattedAttendee];
             }
