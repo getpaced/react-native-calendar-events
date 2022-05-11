@@ -51,7 +51,7 @@ dispatch_queue_t serialQueue;
     CGFloat r;
     CGFloat g;
     CGFloat b;
-    if(components && sizeof(components) >= 3){
+    if (components && sizeof(components) >= 3){
         r = components[0];
         g = components[1];
         b = components[2];
@@ -120,10 +120,9 @@ RCT_EXPORT_MODULE()
     NSString *timeZone = [RCTConvert NSString:details[_timeZone]];
 
     if (eventId) {
-        // BOOL futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
         NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
-        if(exceptionDate) {
+        if (exceptionDate) {
             NSCalendar *cal = [NSCalendar currentCalendar];
             NSDate *endPredicateDate = [cal dateByAddingUnit:NSCalendarUnitDay
                                      value:1
@@ -454,10 +453,10 @@ RCT_EXPORT_MODULE()
 {
     NSMutableArray *availabilitiesStrings = [[NSMutableArray alloc] init];
 
-    if(types & EKCalendarEventAvailabilityBusy) [availabilitiesStrings addObject:@"busy"];
-    if(types & EKCalendarEventAvailabilityFree) [availabilitiesStrings addObject:@"free"];
-    if(types & EKCalendarEventAvailabilityTentative) [availabilitiesStrings addObject:@"tentative"];
-    if(types & EKCalendarEventAvailabilityUnavailable) [availabilitiesStrings addObject:@"unavailable"];
+    if (types & EKCalendarEventAvailabilityBusy) [availabilitiesStrings addObject:@"busy"];
+    if (types & EKCalendarEventAvailabilityFree) [availabilitiesStrings addObject:@"free"];
+    if (types & EKCalendarEventAvailabilityTentative) [availabilitiesStrings addObject:@"tentative"];
+    if (types & EKCalendarEventAvailabilityUnavailable) [availabilitiesStrings addObject:@"unavailable"];
 
     return availabilitiesStrings;
 }
@@ -482,19 +481,19 @@ RCT_EXPORT_MODULE()
 
 - (EKEventAvailability)availablilityConstantMatchingString:(NSString *)string
 {
-    if([string isEqualToString:@"busy"]) {
+    if ([string isEqualToString:@"busy"]) {
         return EKEventAvailabilityBusy;
     }
 
-    if([string isEqualToString:@"free"]) {
+    if ([string isEqualToString:@"free"]) {
         return EKEventAvailabilityFree;
     }
 
-    if([string isEqualToString:@"tentative"]) {
+    if ([string isEqualToString:@"tentative"]) {
         return EKEventAvailabilityTentative;
     }
 
-    if([string isEqualToString:@"unavailable"]) {
+    if ([string isEqualToString:@"unavailable"]) {
         return EKEventAvailabilityUnavailable;
     }
 
@@ -621,8 +620,6 @@ RCT_EXPORT_MODULE()
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
             for (EKParticipant *attendee in event.attendees) {
                 
-                NSLog(@"%@", attendee.description);
-                
                 NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
                 for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
                 {
@@ -645,31 +642,31 @@ RCT_EXPORT_MODULE()
                 [formattedAttendee setValue:[NSNumber numberWithBool:isMe] forKey:@"isMe"];
                 [formattedAttendee setValue:[NSNumber numberWithBool:isOrganizer] forKey:@"isOrganizer"];
 
-                if(email && ![email isEqualToString:@"(null)"]) {
+                if (email && ![email isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:email forKey:@"email"];
                 }
                 else {
                     [formattedAttendee setValue:@"" forKey:@"email"];
                 }
-                if(phone && ![phone isEqualToString:@"(null)"]) {
+                if (phone && ![phone isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:phone forKey:@"phone"];
                 }
                 else {
                     [formattedAttendee setValue:@"" forKey:@"phone"];
                 }
-                if(name && ![name isEqualToString:@"(null)"]) {
+                if (name && ![name isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:name forKey:@"name"];
                 }
                 else {
                     [formattedAttendee setValue:@"" forKey:@"name"];
                 }
-                if(role && ![role isEqualToString:@"(null)"] && attendeesRoles[role]) {
+                if (role && ![role isEqualToString:@"(null)"] && attendeesRoles[role]) {
                     [formattedAttendee setValue:attendeesRoles[role] forKey:@"role"];
                 }
                 else {
                     [formattedAttendee setValue:@"Unknown" forKey:@"role"];
                 }
-                if(status && ![status isEqualToString:@"(null)"] && attendeesStatuses[status]) {
+                if (status && ![status isEqualToString:@"(null)"] && attendeesStatuses[status]) {
                     [formattedAttendee setValue:attendeesStatuses[status] forKey:@"status"];
                 }
                 else {
