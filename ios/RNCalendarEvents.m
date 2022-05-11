@@ -621,6 +621,9 @@ RCT_EXPORT_MODULE()
                 NSString *phone = [descriptionData valueForKey:@"phone"];
                 NSString *role = [descriptionData valueForKey:@"role"];
                 NSString *status = [descriptionData valueForKey:@"status"];
+                bool isMe = attendee.currentUser;
+                
+                [formattedAttendee setValue:[NSNumber numberWithBool:isMe] forKey:@"isMe"];
 
                 if(email && ![email isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:email forKey:@"email"];
