@@ -85,7 +85,7 @@ interface CalendarEventBase {
   startDate: ISODateString;
   /** The end date of the calendar event in ISO format. */
   endDate?: ISODateString;
-  /** Unique id for the calendar where the event will be saved. Defaults to the device's default  calendar. */
+  /** Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. */
   calendarId?: string;
   /** Indicates whether the event is an all-day event. */
   allDay?: boolean;
@@ -105,6 +105,10 @@ interface CalendarEventBase {
   description?: string;
   /** iOS ONLY - The time zone associated with the event */
   timeZone?: string;
+  /** iOS ONLY - The date that this calendar item was created. */
+  creationDate?: ISODateString;
+  /** iOS ONLY - The date that the calendar item was last modified. */
+  lastModifiedDate?: ISODateString
 }
 
 export interface CalendarEventReadable extends CalendarEventBase {

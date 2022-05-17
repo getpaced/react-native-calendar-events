@@ -22,8 +22,10 @@ static NSString *const _recurrenceRule = @"recurrenceRule";
 static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
-static NSString *const _attendees    = @"attendees";
-static NSString *const _timeZone    = @"timeZone";
+static NSString *const _attendees = @"attendees";
+static NSString *const _timeZone = @"timeZone";
+static NSString *const _creationDate = @"creationDate";
+static NSString *const _lastModifiedDate = @"lastModifiedDate";
 
 dispatch_queue_t serialQueue;
 
@@ -60,7 +62,7 @@ dispatch_queue_t serialQueue;
         g = 1;
         b = 1;
     }
-    
+
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX",
             lroundf(r * 255),
             lroundf(g * 255),
@@ -230,12 +232,12 @@ RCT_EXPORT_MODULE()
         NSDictionary *geo = [locationOptions valueForKey:@"coords"];
         CLLocation *geoLocation = [[CLLocation alloc] initWithLatitude:[[geo valueForKey:@"latitude"] doubleValue]
                                                              longitude:[[geo valueForKey:@"longitude"] doubleValue]];
-        
+
         calendarEvent.structuredLocation = [EKStructuredLocation locationWithTitle:[locationOptions valueForKey:@"title"]];
         calendarEvent.structuredLocation.geoLocation = geoLocation;
         calendarEvent.structuredLocation.radius = [[locationOptions valueForKey:@"radius"] doubleValue];
     }
-    
+
     return [self saveEvent:calendarEvent options:options];
 }
 
@@ -535,7 +537,9 @@ RCT_EXPORT_MODULE()
                                                  @"endDate": @""
                                                  },
                                          _availability: @"",
-                                         _timeZone: @""
+                                         _timeZone: @"",
+                                         _creationDate: @"",
+                                         _lastModifiedDate: @"",
                                          };
 
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -584,14 +588,14 @@ RCT_EXPORT_MODULE()
     }
 
     @try {
-        
+
         NSMutableDictionary *attendeesRoles = [NSMutableDictionary dictionary];
         [attendeesRoles setObject: @"Unknown" forKey: @"0"];
         [attendeesRoles setObject: @"Required" forKey: @"1"];
         [attendeesRoles setObject: @"Optional" forKey: @"2"];
         [attendeesRoles setObject: @"Chair" forKey: @"3"];
         [attendeesRoles setObject: @"NonParticipant" forKey: @"4"];
-        
+
         NSMutableDictionary *attendeesStatuses = [NSMutableDictionary dictionary];
         [attendeesStatuses setObject: @"Accepted" forKey: @"2"];
         [attendeesStatuses setObject: @"Completed" forKey: @"6"];
@@ -601,7 +605,7 @@ RCT_EXPORT_MODULE()
         [attendeesStatuses setObject: @"Pending" forKey: @"1"];
         [attendeesStatuses setObject: @"Tentative" forKey: @"4"];
         [attendeesStatuses setObject: @"Unknown" forKey: @"0"];
-        
+
         NSString *organizerEmail = @"";
         if (event.organizer) {
             EKParticipant *organizer = event.organizer;
@@ -615,11 +619,11 @@ RCT_EXPORT_MODULE()
             }
             organizerEmail = [organizerData valueForKey:@"email"];
         }
-        
+
         if (event.attendees) {
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
             for (EKParticipant *attendee in event.attendees) {
-                
+
                 NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
                 for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
                 {
@@ -638,7 +642,7 @@ RCT_EXPORT_MODULE()
 
                 bool isMe = attendee.currentUser;
                 bool isOrganizer = email && ![email isEqualToString:@"(null)"] && [email isEqualToString:organizerEmail];
-                
+
                 [formattedAttendee setValue:[NSNumber numberWithBool:isMe] forKey:@"isMe"];
                 [formattedAttendee setValue:[NSNumber numberWithBool:isOrganizer] forKey:@"isOrganizer"];
 
@@ -672,7 +676,7 @@ RCT_EXPORT_MODULE()
                 else {
                     [formattedAttendee setValue:@"Unknown" forKey:@"status"];
                 }
-                
+
                 [attendees addObject:formattedAttendee];
             }
             [formedCalendarEvent setValue:attendees forKey:_attendees];
@@ -681,7 +685,7 @@ RCT_EXPORT_MODULE()
     @catch (NSException *exception) {
         NSLog(@"RNCalendarEvents encountered an issue while serializing event (attendees) '%@': %@", event.title, exception.reason);
     }
-    
+
     @try {
         if (event.hasAlarms) {
             NSMutableArray *alarms = [[NSMutableArray alloc] init];
@@ -751,6 +755,14 @@ RCT_EXPORT_MODULE()
         [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.endDate] forKey:_endDate];
     }
 
+    if (event.creationDate) {
+        [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.creationDate] forKey:_creationDate];
+    }
+
+    if (event.lastModifiedDate) {
+        [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.lastModifiedDate] forKey:_lastModifiedDate];
+    }
+
     if (event.occurrenceDate) {
         [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.occurrenceDate] forKey:_occurrenceDate];
     }
@@ -758,7 +770,7 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
 
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
-    
+
     @try {
         if (event.hasRecurrenceRules) {
             EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
@@ -785,9 +797,9 @@ RCT_EXPORT_MODULE()
     @catch (NSException *exception) {
         NSLog(@"RNCalendarEvents encountered an issue while serializing event (recurrenceRules) '%@': %@", event.title, exception.reason);
     }
-    
+
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
-    
+
     @try {
         if (event.structuredLocation && event.structuredLocation.radius) {
             NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
@@ -1069,12 +1081,12 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-    
+
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
     @try {
     RNCalendarEvents *strongSelf = weakSelf;
-    
+
     NSMutableDictionary *details = [NSMutableDictionary dictionaryWithDictionary:settings];
     [details setValue:title forKey:_title];
 
@@ -1098,12 +1110,12 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-    
+
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
     @try {
     RNCalendarEvents *strongSelf = weakSelf;
-    
+
     BOOL futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
